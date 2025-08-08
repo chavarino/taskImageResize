@@ -16,6 +16,7 @@ export class GetTaskUseCase {
       status: task.status,
       price: task.price,
       images: task.images,
+      originalPath: task.originalPath,
     } as TaskResponseDto;
   }
 }
