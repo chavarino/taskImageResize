@@ -1,0 +1,111 @@
+openapi: 3.0.0
+info:
+  title: Prueba Técnica Inditex – API de Procesado de Imágenes y Gestión de Tareas
+  version: 1.0.0
+  description: |
+    Esta API permite crear tareas de procesado de imágenes, asignarles un precio
+    aleatorio y consultar su estado y resultados (variantes generadas) una vez completadas.
+servers:
+  - url: http://localhost:3000
+    description: Servidor de desarrollo
+
+paths:
+  /tasks:
+    post:
+      summary: Crear una nueva tarea de procesado de imagen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreateRequest'
+      responses:
+        '201':
+          description: Tarea creada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          description: Parámetros de entrada inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /tasks/{taskId}:
+    get:
+      summary: Obtener el estado y resultados de una tarea
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+          description: ID de la tarea en MongoDB
+      responses:
+        '200':
+          description: Información de la tarea
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '404':
+          description: Tarea no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    TaskCreateRequest:
+      type: object
+      required:
+        - originalPath
+      properties:
+        originalPath:
+          type: string
+          description: Ruta local o URL de la imagen original
+    ImageVariant:
+      type: object
+      properties:
+        resolution:
+          type: string
+          description: Ancho en píxeles manteniendo aspect ratio (1024, 800)
+        path:
+          type: string
+          description: Ruta donde se almacenó la variante
+    TaskResponse:
+      type: object
+      properties:
+        taskId:
+          type: string
+          description: Identificador único de la tarea
+        status:
+          type: string
+          enum:
+            - pending
+            - completed
+            - failed
+          description: Estado de la tarea
+        price:
+          type: number
+          format: float
+          description: Precio asignado a la tarea
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageVariant'
+          description: Lista de variantes generadas (solo si status = completed)
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Descripción del error
