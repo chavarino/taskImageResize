@@ -4,11 +4,9 @@ import { Injectable } from '@nestjs/common';
 import { Task } from 'src/domain/entities/task.entity/task.entity';
 
 @Injectable()
-export class BaseTaskRepository {
-  save(task: Task): Promise<Task> {
-    throw new Error('Method not implemented.');
-  }
-  findById(id: string): Promise<Task | null> {
-    throw new Error('Method not implemented.');
-  }
+export abstract class BaseTaskRepository {
+  abstract save(task: Task): Promise<Task>;
+  abstract findById(id: string): Promise<Task | null>;
+
+  abstract update(id: string, task: Partial<Task>): Promise<Task>;
 }

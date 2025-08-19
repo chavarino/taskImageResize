@@ -12,7 +12,7 @@ export class GetTaskUseCase {
     const task = await this.repo.findById(id);
     if (!task) throw new NotFoundException(`Tarea ${id} no encontrada`);
     return {
-      taskId: task.id,
+      taskId: task._id,
       status: task.status,
       price: task.price,
       images: task.images,

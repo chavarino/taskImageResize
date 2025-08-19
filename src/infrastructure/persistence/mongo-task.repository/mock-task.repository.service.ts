@@ -6,9 +6,16 @@ const STORE = new Map<string, Task>();
 
 @Injectable()
 export class MockTaskRepository extends BaseTaskRepository {
+  update(id: string, task: Task): Promise<Task> {
+    const oldTask = STORE.get(id);
+    const updatedTask: Task = { ...oldTask, ...task, _id: id };
+    STORE.set(id, updatedTask);
+    return Promise.resolve(updatedTask);
+  }
+
   save(task: Task) {
-    task.id = Math.random().toString(36).slice(2);
-    STORE.set(task.id, task);
+    task._id = Math.random().toString(36).slice(2);
+    STORE.set(task._id, task);
     return Promise.resolve(task);
   }
   findById(id: string): Promise<Task | null> {
