@@ -6,7 +6,6 @@ export type TaskDocument = HydratedDocument<TaskModel>;
 
 @Schema({ collection: 'tasks', timestamps: true })
 export class TaskModel {
-  @Prop({ type: String })
   _id?: string;
 
   @Prop({ required: true })
@@ -26,7 +25,7 @@ export class TaskModel {
     required: false,
     default: undefined,
   })
-  variants?: { resolution: string; path: string }[];
+  images?: { resolution: string; path: string }[];
 }
 
 export const TaskSchema = SchemaFactory.createForClass(TaskModel);

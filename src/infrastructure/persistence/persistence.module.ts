@@ -14,7 +14,9 @@ function mongoUri(cfg: ConfigService): string {
   const user = cfg.get<string>('MONGO_USER', 'root');
   const pass = cfg.get<string>('MONGO_PASS', 'root');
   const db = cfg.get<string>('MONGO_DB', 'app');
-  return `mongodb://${user}:${pass}@${host}:${port}/${db}?authSource=admin`;
+  const url =  `mongodb://${user}:${pass}@${host}:${port}/${db}?authSource=admin`;
+  console.log("URL mongo:", url)
+  return url;
 }
 
 const taskRepositoryImpl = {
