@@ -47,38 +47,43 @@ export class GenerateVariantsUseCase {
   ): Promise<void> {
     const images: Image[] = [];
 
-    for (const width of sizes) {
-      const input: Readable = await this.inputFactory.open(originalPath);
-      const { tap, done } = this.hashing.createMd5Tap();
+    try {
+      for (const width of sizes) {
+        const input: Readable = await this.inputFactory.open(originalPath);
+        const { tap, done } = this.hashing.createMd5Tap();
 
-      const tmpExt = (
-        opts.format ??
-        this.naming.extractNameAndExt(originalPath).ext ??
-        'jpg'
-      ).replace(/^jpeg$/i, 'jpg');
-      const tmpRel = `tmp/${randomBytes(8).toString('hex')}.${tmpExt}`;
-      const tmpWritable = await this.writer.getWriteStream(tmpRel);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const transformer = this.resizer.createTransformer(width, {
-        format: opts.format,
-        quality: opts.quality,
-      });
-      await pipeline(input, transformer, tap, tmpWritable);
-      const md5 = await done;
+        const tmpExt = (
+          opts.format ??
+          this.naming.extractNameAndExt(originalPath).ext ??
+          'jpg'
+        ).replace(/^jpeg$/i, 'jpg');
+        const tmpRel = `tmp/${randomBytes(8).toString('hex')}.${tmpExt}`;
+        const tmpWritable = await this.writer.getWriteStream(tmpRel);
 
-      const { relative, public: publicPath } = this.naming.buildOutputPaths({
-        src: originalPath,
-        resolution: width,
-        md5,
-        outputFormat: opts.format,
-      });
+        const transformer = this.resizer.createTransformer(width, {
+          format: opts.format,
+          quality: opts.quality,
+        });
+        await pipeline(input, transformer, tap, tmpWritable);
+        const md5 = await done;
 
-      await this.writer.move(tmpRel, relative);
+        const { relative, public: publicPath } = this.naming.buildOutputPaths({
+          src: originalPath,
+          resolution: width,
+          md5,
+          outputFormat: opts.format,
+        });
 
-      images.push({ path: publicPath, resolution: width.toString() });
+        await this.writer.move(tmpRel, relative);
+
+        images.push({ path: publicPath, resolution: width.toString() });
+      }
+
+      console.info(images);
+      await this.repo.update(taskId, { images, status: TaskStatus.COMPLETED });
+    } catch (error) {
+      await this.repo.update(taskId, { status: TaskStatus.FAILED });
+      throw error;
     }
-
-    console.info(images);
-    await this.repo.update(taskId, { images, status: TaskStatus.COMPLETED });
   }
 }
