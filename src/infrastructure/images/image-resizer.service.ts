@@ -2,8 +2,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Injectable } from '@nestjs/common';
 import sharp, { FormatEnum } from 'sharp';
-import { Readable, Writable } from 'stream';
-import { pipeline } from 'stream/promises';
 
 type OutputFormat = keyof FormatEnum;
 
@@ -39,39 +37,5 @@ export class ImageResizerService {
       );
     }
     return transformer;
-  }
-  async pipeResized(
-    width: number,
-    input: Readable,
-    output: Writable,
-    opts: ResizeStreamOptions = {},
-  ): Promise<void> {
-    if (!Number.isFinite(width) || width <= 0) {
-      throw new Error('width must be a positive number');
-    }
-
-    const transformer = sharp().resize({
-      width,
-      fit: 'inside',
-      withoutEnlargement: true,
-    });
-
-    if (opts.format) {
-      transformer.toFormat(
-        opts.format,
-        typeof opts.quality === 'number'
-          ? { quality: opts.quality }
-          : undefined,
-      );
-    }
-    console.log(
-      `Resizing to ${width}px, format: ${opts.format}, quality: ${opts.quality}`,
-    );
-    input.on('error', (err) => {
-      transformer.destroy(err);
-      console.error(`Input stream error: ${err.message}`);
-    });
-    await pipeline(input, transformer, output);
-    console.log(`finished resizing to ${width}px`);
   }
 }
