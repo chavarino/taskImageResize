@@ -11,7 +11,10 @@ const CONSUMER_ENABLED =
 const configImports = () => {
   const staticImports = [PersistenceModule, ImageQueueModule];
   // is consumer enabled? then up consumer
-  if (CONSUMER_ENABLED) staticImports.push(ImageQueueConsumerModule);
+  if (CONSUMER_ENABLED) {
+    console.info("---->Adding queue consumer")
+    staticImports.push(ImageQueueConsumerModule);
+  }
 
   return staticImports;
 };

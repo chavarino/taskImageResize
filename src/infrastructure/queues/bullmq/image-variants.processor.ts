@@ -16,6 +16,7 @@ export class ImageVariantsProcessor extends WorkerHost {
   }
 
   async process(job: Job<GenerateVariantsJob>) {
+    console.info("New job:", job.name, job.data);
     if (job.name !== JOB_GENERATE_VARIANTS) {
       this.logger.warn(`Unknown job: ${job.name}`);
       return null;
