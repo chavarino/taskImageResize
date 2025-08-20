@@ -7,13 +7,13 @@ import {
   Image,
 } from 'src/shared/dtos/task-response.dto/task-response.dto';
 import { TaskStatus } from 'src/shared/enums/taks-status.enum';
-import { GenerateVariantsUseCase } from '../generate-variants.use-case';
+import { ImageQueueService } from 'src/infrastructure/queues/bullmq/image-queue.service';
 
 @Injectable()
 export class CreateTaskUseCase {
   constructor(
     private readonly repo: BaseTaskRepository,
-    private readonly generateVariants: GenerateVariantsUseCase,
+    private readonly imageQueueService: ImageQueueService,
   ) {}
 
   async execute(dto: CreateTaskDto): Promise<TaskResponseDto> {
@@ -21,7 +21,11 @@ export class CreateTaskUseCase {
     const task = new Task(dto.originalPath, TaskStatus.PENDING, price, []);
     const taskCreated = await this.repo.save(task);
 
-    this.generateVariants.execute(dto.originalPath, taskCreated._id).then(); //TODO: pass to queue
+    await this.imageQueueService.enqueueGenerateVariants({
+      originalPath: dto.originalPath,
+      taskId: taskCreated._id,
+    });
+
     return {
       taskId: taskCreated._id,
       status: taskCreated.status,

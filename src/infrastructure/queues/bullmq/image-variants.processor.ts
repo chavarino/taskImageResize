@@ -1,33 +1,35 @@
-import { Processor } from '@nestjs/bullmq';
+// src/infrastructure/queues/bullmq/image-variants.processor.ts
+import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
-import { IMAGE_QUEUE, JOB_GENERATE_VARIANTS } from './image-queue.constants';
 import { GenerateVariantsUseCase } from 'src/domain/use-cases/generate-variants.use-case';
 import { GenerateVariantsJob } from './dto/generate-variants.job';
+import { IMAGE_QUEUE, JOB_GENERATE_VARIANTS } from './image-queue.constants';
 
-@Processor(IMAGE_QUEUE)
+@Processor(IMAGE_QUEUE, { concurrency: 2 }) // también puedes mover la concurrencia al módulo (workerOptions)
 @Injectable()
-export class ImageVariantsProcessor {
+export class ImageVariantsProcessor extends WorkerHost {
   private readonly logger = new Logger(ImageVariantsProcessor.name);
 
-  constructor(private readonly generateVariants: GenerateVariantsUseCase) {}
+  constructor(private readonly generateVariants: GenerateVariantsUseCase) {
+    super();
+  }
 
-  //@Process({ name: JOB_GENERATE_VARIANTS, concurrency: 2 })
-  async handle(job: Job<GenerateVariantsJob>) {
-    const { originalPath, taskId } = job.data;
+  async process(job: Job<GenerateVariantsJob>) {
+    if (job.name !== JOB_GENERATE_VARIANTS) {
+      this.logger.warn(`Unknown job: ${job.name}`);
+      return null;
+    }
+    const { originalPath, taskId, overrideSizes } = job.data;
+
     try {
-      const variants = await this.generateVariants.execute(
-        originalPath,
-        taskId /*, {
-       // overrideSizes,
-        format,
-        quality,
-      }*/,
-      );
-      return { variants, taskId };
+      await job.updateProgress(10);
+      await this.generateVariants.execute(originalPath, taskId, overrideSizes);
+
+      await job.updateProgress(100);
     } catch (err: any) {
-      this.logger.error(`Failed to generate variants for : ${err}`);
-      throw err;
+      this.logger.error(`Failed to generate variants: ${err}`);
+      await job.moveToFailed(err, 'Failed to generate image variants');
     }
   }
 }
