@@ -8,16 +8,20 @@ import {
 } from 'src/shared/dtos/task-response.dto/task-response.dto';
 import { TaskStatus } from 'src/shared/enums/taks-status.enum';
 import { ImageQueueService } from 'src/infrastructure/queues/bullmq/image-queue.service';
+import { PriceService } from 'src/shared/utils/price.service';
 
 @Injectable()
 export class CreateTaskUseCase {
   constructor(
     private readonly repo: BaseTaskRepository,
     private readonly imageQueueService: ImageQueueService,
+    private readonly priceService: PriceService,
   ) {}
 
   async execute(dto: CreateTaskDto): Promise<TaskResponseDto> {
-    const price = parseFloat((Math.random() * 100).toFixed(2)); // service
+    // TODO in the future, if is a calculate with a three party or external service
+    // add to queue and calculate with async process
+    const price = this.priceService.calcRandom(); 
     const task = new Task(dto.originalPath, TaskStatus.PENDING, price, []);
     const taskCreated = await this.repo.save(task);
 

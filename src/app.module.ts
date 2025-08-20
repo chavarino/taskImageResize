@@ -5,6 +5,7 @@ import { TasksController } from './infrastructure/http/controllers/tasks/tasks.c
 import { PersistenceModule } from './infrastructure/persistence/persistence.module';
 import { ImageQueueConsumerModule } from './infrastructure/queues/bullmq/image-queue.consumer.module';
 import { ImageQueueModule } from './infrastructure/queues/bullmq/image-queue.module';
+import { PriceService } from './shared/utils/price.service';
 const CONSUMER_ENABLED =
   String(process.env.CONSUMER ?? 'false').toLowerCase() === 'true';
 
@@ -22,6 +23,6 @@ const configImports = () => {
 @Module({
   imports: configImports(),
   controllers: [TasksController],
-  providers: [CreateTaskUseCase, GetTaskUseCase],
+  providers: [PriceService, CreateTaskUseCase, GetTaskUseCase],
 })
 export class AppModule {}
