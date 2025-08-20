@@ -12,9 +12,11 @@ import { HttpInputReaderStrategy } from 'src/infrastructure/input/strategies/htt
 import { FileNamingService } from 'src/shared/utils/file-naming.service';
 import { HashingService } from 'src/shared/utils/hashing.service';
 import { InputTypeService } from 'src/shared/utils/input-type.service';
+import { PersistenceModule } from 'src/infrastructure/persistence/persistence.module';
 
 @Module({
   imports: [
+    PersistenceModule,
     BullModule.registerQueue({
       name: IMAGE_QUEUE,
     }),
