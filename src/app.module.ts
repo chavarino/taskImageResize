@@ -13,15 +13,12 @@ import { HttpInputReaderStrategy } from './infrastructure/input/strategies/http-
 import { FileNamingService } from './shared/utils/file-naming.service';
 import { HashingService } from './shared/utils/hashing.service';
 import { InputTypeService } from './shared/utils/input-type.service';
+import { PersistenceModule } from './infrastructure/persistence/persistence.module';
 
 @Module({
-  imports: [],
+  imports: [PersistenceModule],
   controllers: [TasksController],
   providers: [
-    {
-      provide: BaseTaskRepository,
-      useClass: MockTaskRepository,
-    },
     CreateTaskUseCase,
     GetTaskUseCase,
     GenerateVariantsUseCase,
