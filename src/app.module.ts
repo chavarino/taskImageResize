@@ -32,7 +32,6 @@ const configImports = () => {
   providers: [
     CreateTaskUseCase,
     GetTaskUseCase,
-    GenerateVariantsUseCase,
 
     // Utils/infra para generate variants
     ImageResizerService,

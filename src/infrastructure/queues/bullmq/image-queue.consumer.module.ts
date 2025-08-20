@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { IMAGE_QUEUE } from './image-queue.constants';
 import { ImageVariantsProcessor } from './image-variants.processor';
+import { GenerateVariantsUseCase } from 'src/domain/use-cases/generate-variants.use-case';
 
 @Module({
   imports: [
@@ -10,6 +11,6 @@ import { ImageVariantsProcessor } from './image-variants.processor';
       name: IMAGE_QUEUE,
     }),
   ],
-  providers: [ImageVariantsProcessor],
+  providers: [ImageVariantsProcessor, GenerateVariantsUseCase],
 })
 export class ImageQueueConsumerModule {}
